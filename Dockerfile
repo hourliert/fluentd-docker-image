@@ -18,8 +18,9 @@ RUN apt-get update -y && apt-get install -y \
               zlib1g-dev \              
         && rm -rf /var/lib/apt/lists/*
 
-RUN useradd ubuntu -d /home/ubuntu -m -U
-RUN chown -R ubuntu:ubuntu /home/ubuntu
+RUN groupadd fluentd -g 2422
+RUN useradd fluentd -d /home/fluentd -m -u 2422 -g 2422
+RUN chown -R fluentd:fluentd /home/fluentd
 
 # for log storage (maybe shared with host)
 RUN mkdir -p /fluentd/log
@@ -27,15 +28,15 @@ RUN mkdir -p /fluentd/log
 RUN mkdir -p /fluentd/etc
 RUN mkdir -p /fluentd/plugins
 
-RUN chown -R ubuntu:ubuntu /fluentd
+RUN chown -R fluentd:fluentd /fluentd
 
-USER ubuntu
-WORKDIR /home/ubuntu
+USER fluentd
+WORKDIR /home/fluentd
 
-RUN git clone https://github.com/tagomoris/xbuild.git /home/ubuntu/.xbuild
-RUN /home/ubuntu/.xbuild/ruby-install 2.2.2 /home/ubuntu/ruby
+RUN git clone https://github.com/tagomoris/xbuild.git /home/fluentd/.xbuild
+RUN /home/fluentd/.xbuild/ruby-install 2.2.2 /home/fluentd/ruby
 
-ENV PATH /home/ubuntu/ruby/bin:$PATH
+ENV PATH /home/fluentd/ruby/bin:$PATH
 RUN gem install fluentd -v 0.12.15
 
 # RUN gem install fluent-plugin-webhdfs
@@ -44,7 +45,7 @@ COPY fluent.conf /fluentd/etc/
 ONBUILD COPY fluent.conf /fluentd/etc/
 ONBUILD COPY plugins/* /fluentd/plugins/
 
-WORKDIR /home/ubuntu
+WORKDIR /home/fluentd
 
 ENV FLUENTD_OPT=""
 ENV FLUENTD_CONF="fluent.conf"
